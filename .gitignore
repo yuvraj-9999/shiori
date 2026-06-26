@@ -1,0 +1,19 @@
+# Python virtual environments
+venv/
+.venv/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ChromaDB
+python-service/chroma_db/
+
+# Uploads
+server/uploads/
+
+# Environment files
+**/.env

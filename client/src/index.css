@@ -1,0 +1,168 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+@import "tailwindcss";
+
+/* ─── Reset ──────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* ─── Design Tokens ──────────────────────────────────── */
+:root {
+  /* Typography */
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+
+  /* Backgrounds — warm paper */
+  --bg:          #F7F3ED;
+  --surface:     #FFFFFF;
+  --surface-2:   #F2EDE7;
+
+  /* Borders — warm stone */
+  --border:      #E6DDD5;
+  --border-light:#EDE6DE;
+
+  /* Typography — warm ink */
+  --text-primary:   #181614;
+  --text-secondary: #6F675F;
+  --text-muted:     #9A9088;
+  --text-placeholder: #BDB5AD;
+
+  /* Terracotta Accent — used sparingly */
+  --accent:        #C1623F;
+  --accent-hover:  #A84F31;
+  --accent-light:  #F5EAE4;
+  --accent-border: #E5C0AC;
+  --accent-medium: #D4806A;
+
+  /* Semantic */
+  --error:        #B91C1C;
+  --error-bg:     #FEF2F2;
+  --error-border: #FECACA;
+  --success:      #15803D;
+  --success-bg:   #F0FDF4;
+  --success-border:#BBF7D0;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--text-primary);
+}
+
+#root {
+  width: 100%;
+  min-height: 100svh;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────── */
+::-webkit-scrollbar         { width: 4px; height: 4px; }
+::-webkit-scrollbar-track   { background: transparent; }
+::-webkit-scrollbar-thumb   { background: var(--accent-border); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-medium); }
+
+/* ─── Focus Rings ────────────────────────────────────── */
+.focus-ring:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(193, 98, 63, 0.1);
+}
+
+/* ─── Prose — AI answer rendering ───────────────────── */
+.prose-answer {
+  line-height: 1.8;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+.prose-answer p              { margin: 0 0 0.65rem; }
+.prose-answer p:last-child   { margin-bottom: 0; }
+.prose-answer strong         { font-weight: 600; color: var(--text-primary); }
+.prose-answer em             { font-style: italic; color: var(--text-secondary); }
+.prose-answer a              { color: var(--accent); text-decoration: underline; }
+.prose-answer code {
+  background: var(--accent-light);
+  color: var(--accent);
+  padding: 0.12rem 0.38rem;
+  border-radius: 5px;
+  font-size: 0.82em;
+  font-family: 'Fira Code', 'Cascadia Code', ui-monospace, Consolas, monospace;
+  font-weight: 500;
+}
+.prose-answer pre {
+  background: #181614;
+  color: #F2EDE7;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  overflow-x: auto;
+  font-size: 0.82em;
+  margin: 0.75rem 0;
+  border: 1px solid #2C2520;
+}
+.prose-answer pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+  font-size: inherit;
+}
+.prose-answer ul  { margin: 0.5rem 0; padding-left: 1.35rem; }
+.prose-answer ol  { margin: 0.5rem 0; padding-left: 1.35rem; }
+.prose-answer li  { margin-bottom: 0.3rem; }
+.prose-answer h1,
+.prose-answer h2,
+.prose-answer h3 {
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 1rem 0 0.4rem;
+  letter-spacing: -0.02em;
+}
+.prose-answer h1 { font-size: 1.1rem; }
+.prose-answer h2 { font-size: 1.0rem; }
+.prose-answer h3 { font-size: 0.92rem; }
+.prose-answer blockquote {
+  border-left: 2.5px solid var(--accent-border);
+  margin: 0.75rem 0;
+  padding: 0.5rem 1rem;
+  background: var(--accent-light);
+  border-radius: 0 8px 8px 0;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+.prose-answer table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85em;
+  margin: 0.75rem 0;
+}
+.prose-answer th {
+  background: var(--surface-2);
+  font-weight: 600;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.prose-answer td {
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--border);
+}
+.prose-answer hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1rem 0;
+}
+
+/* ─── Input / button font reset ──────────────────────── */
+input, textarea, button, select {
+  font-family: inherit;
+}
+
+/* ─── Shimmer skeleton ───────────────────────────────── */
+@keyframes shimmer {
+  0%   { opacity: 0.45; }
+  50%  { opacity: 0.9; }
+  100% { opacity: 0.45; }
+}
+.shimmer {
+  animation: shimmer 1.8s ease-in-out infinite;
+}

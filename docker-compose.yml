@@ -1,0 +1,43 @@
+services:
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:5000/api/v1
+    container_name: shiori-client
+    ports:
+      - "5173:80"
+    depends_on:
+      - server
+    restart: unless-stopped
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: shiori-server
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./server/.env.docker
+    depends_on:
+      - python-service
+    volumes:
+      - uploads_data:/app/uploads
+    restart: unless-stopped
+
+  python-service:
+    build:
+      context: ./python-service
+      dockerfile: Dockerfile
+    container_name: shiori-python
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/app/chroma_db
+    restart: unless-stopped
+
+volumes:
+  uploads_data:
+  chroma_data:
