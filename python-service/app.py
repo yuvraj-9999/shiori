@@ -90,7 +90,7 @@ def search_documents(request: SearchRequest):
 
     results = collection.query(
         query_embeddings=[query_embedding],
-        n_results=10,
+        n_results=20,
         where={
             "userId": request.userId
         }
