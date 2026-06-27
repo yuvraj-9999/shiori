@@ -16,10 +16,15 @@ export const extractPdf = async (filePath) => {
     try {
         const pdfBuffer = await fs.readFile(filePath);
 
-        // Node.js Buffer is a subclass of Uint8Array — pdfjs-dist accepts it
-        // directly. Passing pdfBuffer instead of new Uint8Array(pdfBuffer)
-        // avoids a full copy of the raw PDF bytes on the heap.
-        pdf = await pdfjsLib.getDocument({ data: pdfBuffer }).promise;
+        const pdfData = new Uint8Array(
+            pdfBuffer.buffer,
+            pdfBuffer.byteOffset,
+            pdfBuffer.byteLength
+        );
+
+        pdf = await pdfjsLib.getDocument({
+            data: pdfData,
+        }).promise;
 
         const pages = [];
 
