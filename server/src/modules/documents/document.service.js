@@ -13,7 +13,11 @@ export const processDocuments = async (files, userId) => {
     const extractedDocuments = [];
 
     for(const file of files){
+        console.log(`[mem] pipeline start — before extractPdf: ${(process.memoryUsage().heapUsed/1024/1024).toFixed(1)} MB`);
+
         const pdfData = await extractPdf(file.path);
+
+        console.log(`[mem] pipeline — after extractPdf: ${(process.memoryUsage().heapUsed/1024/1024).toFixed(1)} MB`);
 
         // Capture the scalar before we start iterating pages, so it remains
         // available after pdfData.pages is cleared below.
@@ -31,6 +35,8 @@ export const processDocuments = async (files, userId) => {
         // embedChunks() network loop runs, keeping peak heap lower.
         pdfData.pages = null;
 
+        console.log(`[mem] pipeline — after chunking (${chunks.length} chunks, pages cleared): ${(process.memoryUsage().heapUsed/1024/1024).toFixed(1)} MB`);
+
         const chunksWithUser = chunks.map(chunk => ({
             ...chunk,
             userId
@@ -46,6 +52,8 @@ export const processDocuments = async (files, userId) => {
 
         const embeddedChunks = await embedChunks(chunksWithUser);
 
+        console.log(`[mem] pipeline — after embedChunks: ${(process.memoryUsage().heapUsed/1024/1024).toFixed(1)} MB`);
+
         // chunksWithUser has been fully consumed by embedChunks().
         // Clearing it drops the last reference to the pre-embedding chunk
         // objects before the storeChunks() network call.
@@ -56,6 +64,8 @@ export const processDocuments = async (files, userId) => {
         console.log("Chunks sent to Python.");
 
         await storeChunks(embeddedChunks);
+
+        console.log(`[mem] pipeline — after storeChunks: ${(process.memoryUsage().heapUsed/1024/1024).toFixed(1)} MB`);
 
         // embeddedChunks has been stored. Clearing it releases ~20 × 1536
         // float values (≈245 KB of JS heap) before Document.create() and

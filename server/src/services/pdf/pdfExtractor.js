@@ -1,6 +1,9 @@
 import fs from "node:fs/promises";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 
+// Returns heap used in MB — used for production memory instrumentation.
+const heapMB = () =>
+    (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(1);
 
 
 export const extractPdf = async (filePath) => {
@@ -23,11 +26,15 @@ export const extractPdf = async (filePath) => {
             pdfBuffer.byteLength
         );
 
+        console.log(`[mem] pdfExtractor — before getDocument: ${heapMB()} MB`);
+
         // Keep the loadingTask reference — this is the object that has destroy().
         loadingTask = pdfjsLib.getDocument({ data: pdfData });
 
         // pdf (PDFDocumentProxy) is used only for page access inside this block.
         const pdf = await loadingTask.promise;
+
+        console.log(`[mem] pdfExtractor — document loaded (${pdf.numPages} pages): ${heapMB()} MB`);
 
         const pages = [];
 
@@ -47,6 +54,8 @@ export const extractPdf = async (filePath) => {
             });
         }
 
+        console.log(`[mem] pdfExtractor — all pages extracted: ${heapMB()} MB`);
+
         return {
             totalPages,
             pages,
@@ -61,6 +70,7 @@ export const extractPdf = async (filePath) => {
         // PDFDocumentProxy has cleanup() (cache only), not destroy().
         if (loadingTask) {
             await loadingTask.destroy();
+            console.log(`[mem] pdfExtractor — after loadingTask.destroy(): ${heapMB()} MB`);
         }
     }
 
