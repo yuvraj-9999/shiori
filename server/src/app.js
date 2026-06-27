@@ -7,7 +7,14 @@ import authRoutes from "./modules/auth/auth.routes.js";
 
 const app = express();
 
-app.use(cors());
+app.use(
+    cors({
+        origin: [
+            "http://localhost:5173",
+            "https://shiori-ivory.vercel.app",
+        ],
+    })
+);
 app.use(express.json());
 
 app.use("/api/v1/documents", documentRoutes);
