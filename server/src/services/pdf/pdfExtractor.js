@@ -9,9 +9,10 @@ export const extractPdf = async (filePath) => {
         throw new Error("File path is required");
     }
 
-    // Declared outside try so the finally block can always reach it
-    // and call destroy() regardless of whether extraction succeeded or failed.
-    let pdf = null;
+    // PDFDocumentLoadingTask is what getDocument() returns directly.
+    // destroy() lives on the LoadingTask, NOT on PDFDocumentProxy.
+    // Hoisted outside try so the finally block can always reach it.
+    let loadingTask = null;
 
     try {
         const pdfBuffer = await fs.readFile(filePath);
@@ -22,9 +23,11 @@ export const extractPdf = async (filePath) => {
             pdfBuffer.byteLength
         );
 
-        pdf = await pdfjsLib.getDocument({
-            data: pdfData,
-        }).promise;
+        // Keep the loadingTask reference — this is the object that has destroy().
+        loadingTask = pdfjsLib.getDocument({ data: pdfData });
+
+        // pdf (PDFDocumentProxy) is used only for page access inside this block.
+        const pdf = await loadingTask.promise;
 
         const pages = [];
 
@@ -52,12 +55,12 @@ export const extractPdf = async (filePath) => {
     } catch (error) {
         throw new Error(`Failed to extract PDF: ${error.message}`);
     } finally {
-        // pdf.destroy() releases the pdfjs internal document model from the
-        // V8 heap immediately: XRef table, page stream buffers, font caches,
-        // and all PDFPageProxy objects. Without this call the GC cannot
-        // collect them because the PDFDocumentProxy holds live references.
-        if (pdf) {
-            await pdf.destroy();
+        // loadingTask.destroy() is the correct pdfjs-dist API for full teardown.
+        // It terminates the worker, aborts pending streams, and releases the
+        // XRef table, page buffers, and font caches from the V8 heap.
+        // PDFDocumentProxy has cleanup() (cache only), not destroy().
+        if (loadingTask) {
+            await loadingTask.destroy();
         }
     }
 
