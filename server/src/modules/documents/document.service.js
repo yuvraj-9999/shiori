@@ -15,6 +15,10 @@ export const processDocuments = async (files, userId) => {
     for(const file of files){
         const pdfData = await extractPdf(file.path);
 
+        // Capture the scalar before we start iterating pages, so it remains
+        // available after pdfData.pages is cleared below.
+        const totalPages = pdfData.totalPages;
+
         const chunks = [];
 
         for(const page of pdfData.pages){
@@ -22,35 +26,59 @@ export const processDocuments = async (files, userId) => {
             chunks.push(...pageChunks);
         }
 
+        // Page text has been fully consumed by chunkPage(). Releasing the
+        // reference now lets the GC collect all page-text strings before the
+        // embedChunks() network loop runs, keeping peak heap lower.
+        pdfData.pages = null;
+
         const chunksWithUser = chunks.map(chunk => ({
             ...chunk,
             userId
         }));
 
+        // Capture count now; chunks array will be cleared next.
+        const totalChunks = chunks.length;
+
+        // chunksWithUser is the definitive copy with userId attached.
+        // Clearing chunks removes the duplicate reference to the same text
+        // strings so the GC is free to collect them if needed.
+        chunks.length = 0;
+
         const embeddedChunks = await embedChunks(chunksWithUser);
 
-        console.log("Uploading chunks:", chunks.length);
-console.log("First chunk user:", chunks[0].userId);
+        // chunksWithUser has been fully consumed by embedChunks().
+        // Clearing it drops the last reference to the pre-embedding chunk
+        // objects before the storeChunks() network call.
+        chunksWithUser.length = 0;
 
-console.log("Chunks sent to Python.");
+        console.log("Uploading chunks:", totalChunks);
+        console.log("First chunk user:", embeddedChunks[0]?.userId);
+        console.log("Chunks sent to Python.");
 
         await storeChunks(embeddedChunks);
+
+        // embeddedChunks has been stored. Clearing it releases ~20 × 1536
+        // float values (≈245 KB of JS heap) before Document.create() and
+        // JSON serialization of the response run.
+        embeddedChunks.length = 0;
 
         await Document.create({
             userId,
             originalName: file.originalname,
             storedFileName: file.filename,
-            totalPages: pdfData.totalPages,
-            totalChunks: chunks.length,
+            totalPages,
+            totalChunks,
         });
 
+        // Return only the metadata the frontend needs.
+        // Omitting pdfData.pages and embeddedChunks prevents JSON.stringify
+        // from allocating a large contiguous string for raw text and
+        // 1536-dimensional float vectors the browser does not use.
         extractedDocuments.push({
             originalName: file.originalname,
             storedFileName: file.filename,
-            totalPages: pdfData.totalPages,
-            pages: pdfData.pages,
-            totalChunks: chunks.length,
-            chunks:embeddedChunks,
+            totalPages,
+            totalChunks,
         });
     }
 
