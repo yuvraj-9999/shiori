@@ -18,6 +18,14 @@ console.log("USER ID:", userId);
         "\n\n"
     );
 
+    console.log("========== CONTEXT ==========");
+console.log(context);
+console.log("=============================");
+
+console.log("========== QUESTION ==========");
+console.log(question);
+console.log("==============================");
+
     const answer = await generateAnswer(
         question,
         context
