@@ -101,7 +101,7 @@ shiori/
 ### Clone the repository
 
 ```bash
-git clone https://github.com/<your-username>/shiori.git
+git clone https://github.com/yuvraj-9999/shiori.git
 cd shiori
 ```
 
